@@ -128,7 +128,7 @@ while cv.waitKey(1) < 0:
     if not hasFrame:
         print("Done processing !!!")
         print("Output file is stored as ", outputFile)
-        cv.waitKey(3000)
+        cv.waitKey(300)
         # Release device
         cap.release()
         break
@@ -155,8 +155,8 @@ while cv.waitKey(1) < 0:
         cv.imwrite(outputFile, frame.astype(np.uint8))
     else:
         vid_writer.write(frame.astype(np.uint8))
+
 outputFile=cv.imread(outputFile)
-
-
+cv.destroyWindow(winName)
 cv.imshow("Processed Image", outputFile)
 cv.waitKey(0)
