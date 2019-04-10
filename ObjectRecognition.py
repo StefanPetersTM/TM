@@ -39,7 +39,7 @@ def getOutputsNames(net):
 # Draw the predicted bounding box
 def drawPred(classId, conf, left, top, right, bottom):
     # Draw a bounding box.
-    cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
+    cv.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 3)
 
     label = '%.2f' % conf
 
@@ -155,5 +155,8 @@ while cv.waitKey(1) < 0:
         cv.imwrite(outputFile, frame.astype(np.uint8))
     else:
         vid_writer.write(frame.astype(np.uint8))
+outputFile=cv.imread(outputFile)
 
-cv.imshow(winName, frame)
+
+cv.imshow("Processed Image", outputFile)
+cv.waitKey(0)
