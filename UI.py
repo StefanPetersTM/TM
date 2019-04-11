@@ -1,6 +1,20 @@
 from tkinter import *
 from tkinter import filedialog
-import ObjectRecognition.py
+#import ObjectRecognition.py
+
+import cv2 as cv
+import argparse
+import sys
+import numpy as np
+import os.path
+
+# Initialize the parameters
+confThreshold = 0.5  #Confidence threshold
+nmsThreshold = 0.4   #Non-maximum suppression threshold
+inpWidth = 416       #Width of network's input image
+inpHeight = 416      #Height of network's input image
+
+def objrec():
 
 window = Tk()
 window.title("Simple UI")
@@ -14,6 +28,11 @@ def clicked():
 
     button1 = Button(window, text=u"Choose a file", command=loadfile)
     button1.grid(column=0, row=1, sticky="ew", columnspan=1)
+    button3 = Button(window, text=u"Click to begin analysis", command=objrec)
+    button3.grid(column=0, row=3, sticky="ew", columnspan=1)
+
+#def objrec():
+#    pass
 
 def exit():
     sys.exit(0)
@@ -38,5 +57,4 @@ btn2.grid(column=0, row=2)
 
 
 window.mainloop()
-
 
