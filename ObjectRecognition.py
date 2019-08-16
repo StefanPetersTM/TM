@@ -1,21 +1,25 @@
 import cv2 as cv
-import argparse
+#import argparse
 import sys
 import numpy as np
 import os.path
 
-# Initialize the parameters
-confThreshold = 0.5  #Confidence threshold
-nmsThreshold = 0.4   #Non-maximum suppression threshold
-inpWidth = 416       #Width of network's input image
-inpHeight = 416      #Height of network's input image
+def recogniser(rI):
+    class recognisedObjects:
+        def __init__(self, objectType):
+            self.objectType = objectType
 
-def objrec():
+    # Initialize the parameters
+    confThreshold = 0.5  #Confidence threshold
+    nmsThreshold = 0.4   #Non-maximum suppression threshold
+    inpWidth = 416       #Width of network's input image
+    inpHeight = 416      #Height of network's input image
 
-    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--image', help='Path to image file.')
-    parser.add_argument('--video', help='Path to video file.')
-    args = parser.parse_args()
+#    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
+#    parser.add_argument('--image', help='Path to image file.')
+#    parser.add_argument('--video', help='Path to video file.')
+#    args = parser.parse_args()
+    args = rI
 
     # Load names of classes
     classesFile = "coco.names"
@@ -158,8 +162,8 @@ def objrec():
         else:
             vid_writer.write(frame.astype(np.uint8))
 
-    outputFile=cv.imread(outputFile)
+    outputFile2 = cv.imread(outputFile)
     cv.destroyWindow(winName)
-    cv.imshow("Processed Image", outputFile)
-    cv.waitKey(0)
-    return outputFile
+#    cv.imshow("Processed Image", outputFile2)
+#    cv.waitKey(0)
+    return outputFile, outputFile2

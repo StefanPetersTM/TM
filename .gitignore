@@ -1,5 +1,8 @@
 /venv
 /.idea
+.DS_Store
 
 yolov3.weights
-.DS_Store
+
+TestObjectRecognition.py
+TestUI.py
