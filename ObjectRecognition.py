@@ -1,8 +1,9 @@
 import cv2 as cv
-#import argparse
+# import argparse
 import sys
 import numpy as np
 import os.path
+
 
 def recogniser(rI):
     class recognisedObjects:
@@ -10,15 +11,15 @@ def recogniser(rI):
             self.objectType = objectType
 
     # Initialize the parameters
-    confThreshold = 0.5  #Confidence threshold
-    nmsThreshold = 0.4   #Non-maximum suppression threshold
-    inpWidth = 416       #Width of network's input image
-    inpHeight = 416      #Height of network's input image
+    confThreshold = 0.5  # Confidence threshold
+    nmsThreshold = 0.4  # Non-maximum suppression threshold
+    inpWidth = 416  # Width of network's input image
+    inpHeight = 416  # Height of network's input image
 
-#    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-#    parser.add_argument('--image', help='Path to image file.')
-#    parser.add_argument('--video', help='Path to video file.')
-#    args = parser.parse_args()
+    #    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
+    #    parser.add_argument('--image', help='Path to image file.')
+    #    parser.add_argument('--video', help='Path to video file.')
+    #    args = parser.parse_args()
     args = rI
 
     # Load names of classes
@@ -51,14 +52,15 @@ def recogniser(rI):
 
         # Get the label for the class name and its confidence
         if classes:
-            assert(classId < len(classes))
+            assert (classId < len(classes))
             label = '%s:%s' % (classes[classId], label)
 
-        #Display the label at the top of the bounding box
+        # Display the label at the top of the bounding box
         labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         top = max(top, labelSize[1])
-        cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine), (255, 255, 255), cv.FILLED)
-        cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
+        cv.rectangle(frame, (left, top - round(1.5 * labelSize[1])), (left + round(1.5 * labelSize[0]), top + baseLine),
+                     (255, 255, 255), cv.FILLED)
+        cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
     # Remove the bounding boxes with low confidence using non-maxima suppression
     def postprocess(frame, outs):
@@ -109,21 +111,22 @@ def recogniser(rI):
             print("Input image file ", args.image, " doesn't exist")
             sys.exit(1)
         cap = cv.VideoCapture(args.image)
-        outputFile = args.image[:-4]+'_yolo_out_py.jpg'
+        outputFile = args.image[:-4] + '_yolo_out_py.jpg'
     elif (args.video):
         # Open the video file
         if not os.path.isfile(args.video):
             print("Input video file ", args.video, " doesn't exist")
             sys.exit(1)
         cap = cv.VideoCapture(args.video)
-        outputFile = args.video[:-4]+'_yolo_out_py.avi'
+        outputFile = args.video[:-4] + '_yolo_out_py.avi'
     else:
         # Webcam input
         cap = cv.VideoCapture(0)
 
     # Get the video writer initialized to save the output video
     if (not args.image):
-        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M','J','P','G'), 30, (round(cap.get(cv.CAP_PROP_FRAME_WIDTH)),round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
+        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30,
+                                    (round(cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
 
     while cv.waitKey(1) < 0:
 
@@ -132,7 +135,7 @@ def recogniser(rI):
 
         # Stop the program if reached end of video
         if not hasFrame:
-            print("Done processing !!!")
+            # print("Done processing !!!")
             print("Output file is stored as ", outputFile)
             cv.waitKey(300)
             # Release device
@@ -140,7 +143,7 @@ def recogniser(rI):
             break
 
         # Create a 4D blob from a frame.
-        blob = cv.dnn.blobFromImage(frame, 1/255, (inpWidth, inpHeight), [0,0,0], 1, crop=False)
+        blob = cv.dnn.blobFromImage(frame, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
 
         # Sets the input to the network
         net.setInput(blob)
@@ -164,6 +167,6 @@ def recogniser(rI):
 
     outputFile2 = cv.imread(outputFile)
     cv.destroyWindow(winName)
-#    cv.imshow("Processed Image", outputFile2)
-#    cv.waitKey(0)
+    #    cv.imshow("Processed Image", outputFile2)
+    #    cv.waitKey(0)
     return outputFile, outputFile2
