@@ -6,9 +6,6 @@ import os.path
 
 
 def recogniser(rI):
-    class recognisedObjects:
-        def __init__(self, objectType):
-            self.objectType = objectType
 
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
@@ -16,12 +13,18 @@ def recogniser(rI):
     inpWidth = 416  # Width of network's input image
     inpHeight = 416  # Height of network's input image
 
-    #    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    #    parser.add_argument('--image', help='Path to image file.')
-    #    parser.add_argument('--video', help='Path to video file.')
-    #    args = parser.parse_args()
-    args = rI
+    #Make a class to get all the bounding boxes and labels
+    class recognisedObject:
+        def __init__(self, label, confidence, position_x, position_y, position_h, position_w):
+            self.label = label
+            self.confidence = confidence
+            self.position_x = position_x
+            self.position_y = position_y
+            self.position_h = position_h
+            self.position_w = position_w
 
+    args = rI
+    recognized_objects = []
     # Load names of classes
     classesFile = "coco.names"
     classes = None
@@ -72,25 +75,35 @@ def recogniser(rI):
         classIds = []
         confidences = []
         boxes = []
+
+        #Vector[0-3] coordinates of predicted boxes; [4]???; [5:]Vector of confidences
         for out in outs:
             for detection in out:
+                #Vector of all the scores
                 scores = detection[5:]
+                #Get the index of the highest score
                 classId = np.argmax(scores)
+                #The highest score
                 confidence = scores[classId]
+                #If there is a match
                 if confidence > confThreshold:
+                    #Center of the box that contains the detected object
                     center_x = int(detection[0] * frameWidth)
                     center_y = int(detection[1] * frameHeight)
+                    #Box width+height
                     width = int(detection[2] * frameWidth)
                     height = int(detection[3] * frameHeight)
                     left = int(center_x - width / 2)
                     top = int(center_y - height / 2)
+
                     classIds.append(classId)
                     confidences.append(float(confidence))
                     boxes.append([left, top, width, height])
-
-        # Perform non maximum suppression to eliminate redundant overlapping boxes with
-        # lower confidences.
+        # Perform non maximum suppression to eliminate redundant overlapping boxes with lower confidences.
+        #Subset of remaining boxes
         indices = cv.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
+        #List of all the recognitions and their attributes
+        recognized_objects = []
         for i in indices:
             i = i[0]
             box = boxes[i]
@@ -98,8 +111,14 @@ def recogniser(rI):
             top = box[1]
             width = box[2]
             height = box[3]
-            drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
+            right = int(left + width)
+            bottom = int(top + height)
 
+            drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
+            a = recognisedObject(classes[classIds[i]], confidences[i], left, top, right, bottom)
+            recognized_objects.append(a)
+
+        return recognized_objects
     # Process inputs
     winName = 'Deep learning object detection in OpenCV'
     cv.namedWindow(winName, cv.WINDOW_NORMAL)
@@ -152,7 +171,9 @@ def recogniser(rI):
         outs = net.forward(getOutputsNames(net))
 
         # Remove the bounding boxes with low confidence
-        postprocess(frame, outs)
+        recognized_objects = postprocess(frame, outs)
+
+
 
         # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
         t, _ = net.getPerfProfile()
@@ -169,4 +190,4 @@ def recogniser(rI):
     cv.destroyWindow(winName)
     #    cv.imshow("Processed Image", outputFile2)
     #    cv.waitKey(0)
-    return outputFile, outputFile2
+    return outputFile, outputFile2, recognized_objects

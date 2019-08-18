@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 import cv2 as cv
 from ObjectRecognition import recogniser
+from os import path
 
 window = Tk()
 window.title("Simple UI")
@@ -34,7 +35,15 @@ def loadfile():
 
     if imagePath:
         print("Selected file is %s" % imagePath)
-        outputFile, outputFile2 = recogniser(rI)
+        outputFile, outputFile2, recognizedObj = recogniser(rI)
+
+        with open(path.splitext(outputFile)[0] + ".csv", "w") as w:
+            w.write("label,confidence,position_h,position_w,position_x,position_y\n")
+            for o in recognizedObj:
+                stri = "{},{},{},{},{},{}\n".format(o.label, o.confidence, o.position_h, o.position_w, o.position_x, o.position_y)
+                w.write(stri)
+        w.close
+
         # print ("The output file is:" + outputFile)
         cv.imshow("Processed Image", outputFile2)
         cv.waitKey(0)
