@@ -34,3 +34,5 @@ This will create a processed copy of the original file in the same folder as the
 - Ethz [paper](https://www.vision.ee.ethz.ch/publications/papers/proceedings/eth_biwi_01126.pdf) on non-maximum suppression
 
 - Link to the explanation of the [darknet](https://docs.opencv.org/master/d6/d0f/group__dnn.html#gafde362956af949cce087f3f25c6aff0d) function
+
+- Link to a visual representation of [haar cascades](https://www.youtube.com/watch?v=hPCTwxF0qf4) used in convectional image processing.
