@@ -3,6 +3,7 @@ import discord
 
 import json
 import os
+import sys
 
 import chat
 import encoder
@@ -15,11 +16,10 @@ import tensorflow as tf
 model_name = 'E:\\Programs\\PyCharmCommunityEdition2019.1.3\\PycharmProjects\\NexthinkChatbotPrototype\\models\\774M'
 seed=None
 length=20
-temperature=.8
+temperature = .85
 top_k=0
 
-user_name = 'Alice'
-bot_name = 'Bob'
+bot_name = 'Bot'
 
 #Open session and maintain it
 enc = encoder.get_encoder(model_name)
@@ -48,14 +48,18 @@ print("\nUsing checkpoint from:\n" + ckpt)
 
 
 prefix = "?"
-token = 'NjE4ODU3MzAxMTM4MjEwODQ2.XW_yVA.TLAZTu_UlYNaM8JOUL2lLfzOQNs'
+token = 'NjE4ODU3MzAxMTM4MjEwODQ2.XXF4uA.boORRlDN7JvN76Cpvqp62MWNipY'
 bot = commands.Bot(command_prefix=prefix)
 
 # Main loop starts here
 # Confirm bot is online
+@bot.event
 async def on_ready():
     print("\nEverything's up and running chief.")
-#    await bot.change_presence(activity=discord.Game(name='!!! for new conv'))
+    await bot.change_presence(activity=discord.Game(name='!!! for new conv'))
+
+#@bot.commands
+#
 
 @bot.event
 async def on_message(message):
@@ -63,31 +67,38 @@ async def on_message(message):
 {1}: {1}. and you?
 {0}: I'm {0}
 {1}: so what can I do for you?
-""".format(user_name, bot_name)
+""".format(message.author.display_name, bot_name)
 
     for i in bot.cached_messages._SequenceProxy__proxied:
         if str(i.author) == "BotMcBotty#3002":
-            #conversation = conversation + ("{}: ".format(bot_name) + i.content + "\n")
-            pass
+            conversation = conversation + (i.content + "\n")
         else:
-            conversation = conversation + ("{}: ".format(user_name) + i.content + "\n{}: ".format(bot_name))
+            conversation = conversation + ("{}: ".format(message.author.display_name) + i.content + "\n{}: ".format(bot_name))
 
     if str(message.author) == "BotMcBotty#3002":
-        print("Bot message duplicate")
+        print("\nBot message duplicate")
     else:
         if message.content == "!!!":
             conversation = None
+            await message.channel.send("New conversation from here on:")
+            await message.channel.send('Clearing messages...')
+            #async for msg in client.logs_from(message.channel):
+            #   if not msg.pinned:
+            #        await bot.delete_message(msg)
+            #messages = []
+            #for i in bot.cached_messages._SequenceProxy__proxied:
+            #   i.delete()
+            return
+        if message.content == "???":
+            await message.channel.send("Restarting bot")
+            python = sys.executable
+            os.execl(python, python, *sys.argv)
 
-        reply, conversations = chat.get_reply(enc, sess, output, context, message.content, user_name, bot_name, conversation)
+        reply, conversations = chat.get_reply(enc, sess, output, context, message.content, message.author.display_name, bot_name, conversation)
 
         conversation = conversation + reply
-        print("\n\n\nCURRENT CONVERSATION:\n" + conversation)
-        await message.channel.send(reply)
-    #    await bot.process_commands(message)
-
-#@bot.command()
-#async def reply(ctx, reply):
-#    await ctx.send()
+        print("\n\n\nCURRENT CONVERSATION with {}:\n".format(message.author.display_name) + conversation)
+        await message.channel.send(reply, tts=True)
 
 bot.run(token)
 
