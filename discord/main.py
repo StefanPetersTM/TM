@@ -12,14 +12,15 @@ import model
 import numpy as np
 import sample
 import tensorflow as tf
+from urllib.request import Request, urlopen
 
 
 def session():
     # Hyperparameters
     model_name = 'E:\\Programs\\PyCharmCommunityEdition2019.1.3\\PycharmProjects\\NexthinkChatbotPrototype\\models\\774M'
     seed = None
-    length = 20
-    temperature = .9
+    length = 50
+    temperature = 0.85
     top_k = 0
 
     global bot_name
@@ -51,9 +52,7 @@ def session():
     print("\nUsing checkpoint from:\n" + ckpt)
     return enc, sess, output, context, bot_name
 
-
-description = '''List of all commands'''
-bot = commands.Bot(command_prefix='!', description=description)
+bot = commands.Bot(command_prefix='!', description='''List of all commands''')
 
 
 @bot.event
@@ -62,7 +61,7 @@ async def on_ready():
     print(bot.user.name)
     print('------')
     print("\nEverything's up and running chief.")
-    await bot.change_presence(activity=discord.Game(name='!!! for new conv'))
+    await bot.change_presence(activity=discord.Game(name='Use at your own risk'))
 
 @bot.command()
 async def add(ctx, left: int, right: int):
@@ -116,18 +115,7 @@ async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')
 
-@bot.command(description='Restart conversation')
-async def clear(ctx):
-    """Clear the current conversation"""
-    await ctx.channel.send('Clearing messages...', delete_after=2)
-    await ctx.channel.send("New conversation from here on:")
-    # async for msg in client.logs_from(message.channel):
-    #   if not msg.pinned:
-    #        await bot.delete_message(msg)
-    # messages = []
-    for i in bot.cached_messages._SequenceProxy__proxied:
-        await i.delete()
-    return
+
 
 @bot.command()
 async def ping(ctx):
@@ -142,9 +130,31 @@ async def on_command_error(ctx, error):
         print("Command error: " + error)
         await ctx.send("Command error: " + error)
 
+@bot.command()
+async def bug(message):
+    """Take a bug report"""
+    await message.channel.send("Please fill out this form to report a bug: https://forms.gle/FyeWKuGdzu5wfyUL6")
+
+@bot.command(description='Restart conversation')
+async def clear(message):
+    """Clear the current conversation"""
+    await message.channel.send('Clearing messages...', delete_after=2)
+    await message.channel.send("New conversation from here on:")
+    # async for msg in client.logs_from(message.channel):
+    #   if not msg.pinned:
+    #        await bot.delete_message(msg)
+    # messages = []
+    async for msg in bot.cached_messages._SequenceProxy__proxied(message.channel):
+        if not msg.pinned:
+            await bot.delete_message(msg)
+
+    #for i in bot.cached_messages._SequenceProxy__proxied:
+    #    await i.delete()
+    return
+
 @bot.event
 async def on_message(message):
-    if "!" not in message.content[0]:
+    if not message.attachments and "!" not in message.content[0] and str(message.author) != "BotMcBotty#3002" and "```" not in message.content:
         conversation = """{0}: hi. what's your name?
 {1}: {1}. and you?
 {0}: I'm {0}
@@ -152,31 +162,42 @@ async def on_message(message):
 """.format(message.author.display_name, bot_name)
 
         for i in bot.cached_messages._SequenceProxy__proxied:
-            if "!" not in i.content[0] and i.tts == True:
-                if str(i.author) == "BotMcBotty#3002":
+            if "!" not in i.content[0] and "!help" not in i.content:
+                if str(i.author) == "BotMcBotty#3002" and "```" not in message.clean_content:
                     conversation = conversation + (i.content + "\n")
-                else:
+                elif "```" not in message.clean_content:
                     conversation = conversation + (
                             "{}: ".format(message.author.display_name) + i.content + "\n{}: ".format(bot_name))
 
         if str(message.author) == "BotMcBotty#3002":
             print("\nBot message duplicate")
         else:
-            if message.content == "!!!":
+            if message.content == ";;;":
                 conversation = None
 
             if message.content == "///":
-                await message.channel.send("Restarting bot")
+                await message.channel.send("Restarting bot. Please wait for ~30s.")
                 python = sys.executable
                 os.execl(python, python, *sys.argv)
 
-            conversation = conversation + ("\n{}: ".format(message.author.display_name))
             reply, conversations = chat.get_reply(enc, sess, output, context, message.content, message.author.display_name, bot_name, conversation)
 
             conversation = conversation + reply
             print("\n\n\nCURRENT CONVERSATION with {}:\n".format(message.author.display_name) + conversation)
             await message.channel.send(reply, tts=True)
-    await bot.process_commands(message)
+    elif message.attachments and str(message.author) != "BotMcBotty#3002":
+        print("Image sent to bot: " + str(message.attachments))
+        req = Request(message.attachments[0].url, headers={'User-Agent': 'Mozilla/5.0'})
+        img = urlopen(req).read()
+
+        fhand = open('discord.jpg', 'wb')
+        fhand.write(img)
+        fhand.close()
+
+        fhand = open('discord.jpg', 'rb')
+        await message.channel.send(file=discord.File(fhand, 'image_echo.png'))
+    elif str(message.author) != "BotMcBotty#3002":
+        await bot.process_commands(message)
 
 enc, sess, output, context, bot_name = session()
-bot.run('NjE4ODU3MzAxMTM4MjEwODQ2.XXF4uA.boORRlDN7JvN76Cpvqp62MWNipY')
+bot.run('NjE4ODU3MzAxMTM4MjEwODQ2.XX62iA.yspNlB48y3bOCMCme_noLtMDgdc')
