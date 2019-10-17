@@ -180,12 +180,15 @@ async def on_message(message):
 """.format(message.author.display_name, bot_name)
 
         for i in bot.cached_messages._SequenceProxy__proxied:
-            if "!" not in str(i.content)[0] and "!help" not in i.content:
-                if str(i.author) == "BotMcBotty#3002" and "```" not in message.clean_content:
-                    conversation = conversation + (i.content + "\n")
-                elif "```" not in message.clean_content:
-                    conversation = conversation + (
-                            "{}: ".format(message.author.display_name) + i.content + "\n{}: ".format(bot_name))
+            try:
+                if "!" not in str(i.content)[0] and "!help" not in str(i.content):
+                    if str(i.author) == "BotMcBotty#3002" and "```" not in message.clean_content:
+                        conversation = conversation + (i.content + "\n")
+                    elif "```" not in message.clean_content:
+                        conversation = conversation + (
+                                "{}: ".format(message.author.display_name) + i.content + "\n{}: ".format(bot_name))
+            except:
+                pass
 
         if str(message.author) == "BotMcBotty#3002":
             print("\nBot message duplicate")
