@@ -24,7 +24,8 @@ def session(anchor_path = r'D:\GithubProjects\TM\data\yolo_anchors.txt', new_siz
     color_table = get_color_table(num_class)
 
     # Initializing session
-    #sess2 = tf.Session()
+    sess2 = tf.Session()
+    start = time.time()
     input_data = tf.placeholder(tf.float32, [1, new_size[1], new_size[0], 3], name='input_data')
     yolo_model = yolov3(num_class, anchors)
     with tf.variable_scope('yolov3'):
@@ -35,11 +36,8 @@ def session(anchor_path = r'D:\GithubProjects\TM\data\yolo_anchors.txt', new_siz
 
     boxes, scores, labels = gpu_nms(pred_boxes, pred_scores, num_class, max_boxes=50, score_thresh=0.5, nms_thresh=0.45)
 
-    #Tensorflow
-    sess2 = tf.Session()
-    saver = tf.train.Saver()
-    saver.restore(sess2, restore_path)
-
+    saver2 = tf.train.Saver()
+    saver2.restore(sess2, restore_path)
 
     return sess2, boxes, scores, labels, input_data, classes, color_table
 
@@ -96,5 +94,5 @@ def obj_rec(input_image, sess2, boxes, scores, labels, input_data, classes, colo
 
     return processed_img
 
-#sess2, boxes, scores, labels, input_data, classes, color_table = session()
-#path = obj_rec(r'C:\Users\Stefan\Downloads\yolo1.jpg', sess2, boxes, scores, labels, input_data, classes, color_table)
+sess2, boxes, scores, labels, input_data, classes, color_table = session()
+path = obj_rec(r'C:\Users\Stefan\Downloads\yolo1.jpg', sess2, boxes, scores, labels, input_data, classes, color_table)

@@ -1,21 +1,10 @@
-import json
-import os
-import sys
-
-import encoder
-import fire
-import model
-import numpy as np
-import sample
-import tensorflow as tf
-
 # Use the commented code below to run a session
 # Use the function below to get a reply from gpt2
 
 #Define function that gets called everytime to get a reply
 def get_reply(
 enc,
-sess,
+sess1,
 output,
 context,
 
@@ -37,7 +26,7 @@ conversation
 
 
     encoded_conversation = enc.encode(conversation)
-    result = sess.run(output, feed_dict={
+    result = sess1.run(output, feed_dict={
         context: [encoded_conversation]
     })[:, len(encoded_conversation):]
     text = enc.decode(result[0])

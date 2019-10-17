@@ -8,7 +8,7 @@ import json
 
 import chat
 import encoder
-import model
+import model1
 import numpy as np
 import sample
 import tensorflow as tf
@@ -27,7 +27,7 @@ def session():
 
     # Open session and maintain it
     enc = encoder.get_encoder(model_name)
-    hparams = model.default_hparams()
+    hparams = model1.default_hparams()
     with open(os.path.join('models', model_name, 'hparams.json')) as f:
         hparams.override_from_dict(json.load(f))
 

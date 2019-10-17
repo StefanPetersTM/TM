@@ -8,3 +8,9 @@ microbitGame.py
 TestObjectRecognition.py
 TestUI.py
 *.pyc
+774M/model.ckpt.data-00000-of-00001
+data/darknet_weights/yolov3.ckpt.data-00000-of-00001
+data/darknet_weights/yolov3.ckpt.meta
+data/darknet_weights1/checkpoint
+data/darknet_weights1/yolov3.ckpt.data-00000-of-00001
+data/darknet_weights1/yolov3.ckpt.meta

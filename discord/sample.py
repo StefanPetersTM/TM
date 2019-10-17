@@ -1,6 +1,3 @@
-import os 
-import tensorflow as tf
-
 from model import *
 
 def top_k_logits(logits, k):
