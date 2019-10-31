@@ -1,76 +1,22 @@
-from discord.ext import commands
-import discord
-
 import os
 import sys
 import random
-import json
+import tensorflow as tf
+import datetime
+
+from urllib.request import Request, urlopen
+import discord
+from discord.ext import commands
 
 import chat
-import encoder
-import model
-import numpy as np
-import sample
-import tensorflow as tf
-from urllib.request import Request, urlopen
-
 import ObjectRecognition
 
-def session():
-    # Hyperparameters
-    model_name = r'D:\GithubProjects\TM\774M'
-    seed = None
-    length = 50
-    temperature = 0.80
-    top_k = 0
-
-    global bot_name
-    bot_name = "Bot"
-
-    # Open session and maintain it
-    enc = encoder.get_encoder(model_name)
-    hparams = model.default_hparams()
-    with open(os.path.join('models', model_name, 'hparams.json')) as f:
-        hparams.override_from_dict(json.load(f))
-
-    if length > hparams.n_ctx:
-        raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
-
-
-    #Tensorflow stuff
-    #gpt2_graph = tf.train.import_meta_graph(r'D:\GithubProjects\TM\774M\model.ckpt.meta')
-    #sess = tf.Session()
-    #ckpt = tf.train.latest_checkpoint(os.path.join('models', model_name))
-    #gpt2_graph.restore(sess, ckpt)
-
-    sess1 = tf.Session()
-
-    np.random.seed(seed)
-    tf.set_random_seed(seed)
-    context = tf.placeholder(tf.int32, [1, None])
-    output = sample.sample_sequence(
-        hparams=hparams, length=length,
-        context=context,
-        batch_size=1,
-        temperature=temperature, top_k=top_k
-    )
-
-    #saver1 = tf.train.import_meta_graph(r'D:\GithubProjects\TM\774M\model.ckpt.meta')
-    saver1 = tf.train.Saver()
-    ckpt = tf.train.latest_checkpoint(os.path.join('models', model_name))
-    saver1.restore(sess1, ckpt)
-
-
-    #saver = tf.train.Saver()
-    #saver.restore(sess, ckpt)
-
-    print("\nUsing checkpoint from:\n" + ckpt)
-    return enc, sess1, output, context, bot_name
-
-
+# Creating bot object that communicates with discord
 bot = commands.Bot(command_prefix='!', description='''List of all commands''')
 
 
+# These are just decorator for events that occur to the bot
+# This first one is called when the bot has successfully authenticated to the discord servers
 @bot.event
 async def on_ready():
     print('\nLogged in as')
@@ -78,6 +24,7 @@ async def on_ready():
     print('------')
     print("\nEverything's up and running chief.")
     await bot.change_presence(activity=discord.Game(name='Use at your own risk'))
+
 
 @bot.command()
 async def add(ctx, left: int, right: int):
@@ -134,8 +81,8 @@ async def _bot(ctx):
 
 @bot.command()
 async def ping(ctx):
-    """simple ping test tool"""
-    await ctx.send(f'Pong! {round(bot.latency*1000)}ms')
+    """Simple ping test tool"""
+    await ctx.send(f'Pong! {round(bot.latency * 1000)}ms')
 
 
 @bot.command()
@@ -162,17 +109,24 @@ async def clear(message):
     #   if not msg.pinned:
     #        await bot.delete_message(msg)
     # messages = []
-    async for msg in bot.cached_messages._SequenceProxy__proxied(message.channel):
-        if not msg.pinned:
-            await bot.delete_message(msg)
 
-    #for i in bot.cached_messages._SequenceProxy__proxied:
+
+#    async for msg in bot.cached_messages._SequenceProxy__proxied(message.channel):
+#        if not msg.pinned:
+#            await bot.delete_message(msg)
+
+async def on_message(message):
+
+
+    # for i in bot.cached_messages._SequenceProxy__proxied:
     #    await i.delete()
     return
 
+
 @bot.event
 async def on_message(message):
-    if not message.attachments and "!" not in message.content[0] and str(message.author) != "BotMcBotty#3002" and "```" not in message.content:
+    if not message.attachments and not message.content.startswith("!") and str(
+            message.author) != "BotMcBotty#3002" and "```" not in message.content:
         conversation = """{0}: hi. what's your name?
 {1}: {1}. and you?
 {0}: I'm {0}
@@ -181,10 +135,10 @@ async def on_message(message):
 
         for i in bot.cached_messages._SequenceProxy__proxied:
             try:
-                if "!" not in str(i.content)[0] and "!help" not in str(i.content):
-                    if str(i.author) == "BotMcBotty#3002" and "```" not in message.clean_content:
+                if not i.content.startswith("!") and "!help" not in str(i.content):
+                    if str(i.author) == "BotMcBotty#3002" and ";;;" not in message.clean_content:
                         conversation = conversation + (i.content + "\n")
-                    elif "```" not in message.clean_content:
+                    elif ";;;" not in message.clean_content:
                         conversation = conversation + (
                                 "{}: ".format(message.author.display_name) + i.content + "\n{}: ".format(bot_name))
             except:
@@ -201,37 +155,40 @@ async def on_message(message):
                 python = sys.executable
                 os.execl(python, python, *sys.argv)
 
-            reply, conversations = chat.get_reply(enc, sess1, output, context, message.content, message.author.display_name, bot_name, conversation)
+            reply, conversations = chat.get_reply(enc, sess1, output, context, message.content,
+                                                  message.author.display_name, bot_name, conversation)
 
             conversation = conversation + reply
             print("\n\n\nCURRENT CONVERSATION with {}:\n".format(message.author.display_name) + conversation)
             await message.channel.send(reply, tts=True)
 
     elif message.attachments and str(message.author) != "BotMcBotty#3002":
-        print("\n"*2)
+        print("\n" * 2)
         print("Image sent to bot: " + str(message.attachments))
         req = Request(message.attachments[0].url, headers={'User-Agent': 'Mozilla/5.0'})
         img = urlopen(req).read()
 
-        fhand = open(r'D:\discord.jpg', 'wb')
+        currentDT = datetime.datetime.now()
+        curr_img_path = 'D:\Discord_bot\Discord_bot_saved_images\{}'.format(
+            str(message.author) + currentDT.strftime("_%Y-%m-%d_%H-%M.jpg"))
+        fhand = open(curr_img_path, 'wb')
         fhand.write(img)
         fhand.close()
 
-        #fhand = open(r'D:\discord.jpg', 'rb')
-        #ghand = ObjectRecognition.obj_rec(r'D:\discord.jpg', sess2)
+        processed_img, labels_ = ObjectRecognition.obj_rec(curr_img_path, sess2, boxes, scores,
+                                                           labels, input_data, classes, color_table)
 
-        processed_img = ObjectRecognition.obj_rec(r'D:\discord.jpg', sess2, boxes, scores, labels, input_data, classes, color_table)
-
-        await message.channel.send(file=discord.File(processed_img, 'processed_image.jpeg'))
+        await message.channel.send(content=labels_, file=discord.File(processed_img, 'processed_image.jpg'))
 
     elif str(message.author) != "BotMcBotty#3002":
         await bot.process_commands(message)
+
 
 g1 = tf.Graph()
 g2 = tf.Graph()
 
 with g1.as_default():
-    enc, sess1, output, context, bot_name = session()
+    enc, sess1, output, context, bot_name = chat.session()
 with g2.as_default():
     sess2, boxes, scores, labels, input_data, classes, color_table = ObjectRecognition.session()
-bot.run('NjE4ODU3MzAxMTM4MjEwODQ2.XZ4E6Q.MVexAhaU0vsc6FefXfU3roUY3A4')
+bot.run('NjE4ODU3MzAxMTM4MjEwODQ2.Xajmjg.seAAGNZ_6FkMGkVbbYawRRhqXL8')
