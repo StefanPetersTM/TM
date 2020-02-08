@@ -16,7 +16,8 @@ from model1 import yolov3
 def session(anchor_path=r'D:\GithubProjects\TM\data\yolo_anchors.txt', new_size=[416, 416],
             class_name_path=r'D:\GithubProjects\TM\data\coco.names',
             restore_path=r'D:\GithubProjects\TM\data\darknet_weights\yolov3.ckpt'):
-    # Initilizing
+
+    # Initializing
     anchors = parse_anchors(anchor_path)
     classes = read_class_names(class_name_path)
     num_class = len(classes)
@@ -32,7 +33,7 @@ def session(anchor_path=r'D:\GithubProjects\TM\data\yolo_anchors.txt', new_size=
 
     pred_scores = pred_confs * pred_probs
 
-    boxes, scores, labels = gpu_nms(pred_boxes, pred_scores, num_class, max_boxes=50, score_thresh=0.5, nms_thresh=0.45)
+    boxes, scores, labels = gpu_nms(pred_boxes, pred_scores, num_class, max_boxes=50, score_thresh=0.25, nms_thresh=0.45)
 
     # Initializing Tensorflow session
     sess2 = tf.Session()
@@ -100,4 +101,5 @@ def obj_rec(input_image, sess2, boxes, scores, labels, input_data, classes, colo
     cv2.imwrite(processed_img, img_ori)
     print("Path to processed image: " + processed_img)
 
-    return processed_img, labels1
+    scores_ = [round(elem, 2) for elem in scores_]
+    return processed_img, labels1, scores_
